@@ -15,8 +15,8 @@ const SYSTEM_PROMPT = `あなたは日本語の敬語変換の専門家です。
 
 出力形式：変換後のテキストのみ。前置きや説明は不要。`;
 
-const PRIMARY_MODEL = "meta-llama/llama-3.3-70b-instruct:free";
-const FALLBACK_MODEL = "mistralai/mistral-7b-instruct:free";
+const PRIMARY_MODEL = "moonshotai/kimi-k2.6:free";     // 日本語対応の無料モデル
+const FALLBACK_MODEL = "openai/gpt-oss-20b:free";       // OpenAIベースの無料モデル
 
 export const POST: APIRoute = async ({ request, locals }) => {
   // @astrojs/cloudflareではlocals.runtime.envからCloudflare環境変数にアクセス
