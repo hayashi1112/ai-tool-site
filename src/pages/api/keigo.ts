@@ -16,7 +16,7 @@ const SYSTEM_PROMPT = `あなたは日本語の敬語変換の専門家です。
 出力形式：変換後のテキストのみ。前置きや説明は不要。`;
 
 const PRIMARY_MODEL = "meta-llama/llama-3.3-70b-instruct:free";
-const FALLBACK_MODEL = "deepseek/deepseek-chat-v3.1:free";
+const FALLBACK_MODEL = "mistralai/mistral-7b-instruct:free";
 
 export const POST: APIRoute = async ({ request, locals }) => {
   // @astrojs/cloudflareではlocals.runtime.envからCloudflare環境変数にアクセス
@@ -39,7 +39,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
   }
 
   if (!apiKey) {
-    return json({ error: "APIキーが設定されていません。", debug: { hasRuntime: !!runtime, envKeys: Object.keys(runtime?.env ?? {}) } }, 500);
+    return json({ error: "APIキーが設定されていません。" }, 500);
   }
 
   // OpenRouter API呼び出し（プライマリ→フォールバック）
@@ -52,7 +52,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       result = await callOpenRouter(apiKey, FALLBACK_MODEL, input);
     } catch (e2) {
       console.error("Fallback model failed:", e2);
-      return json({ error: "AIサービスが一時的に利用できません。しばらくお待ちください。", debug: { e1: String(e1), e2: String(e2) } }, 503);
+      return json({ error: "AIサービスが一時的に利用できません。しばらくお待ちください。" }, 503);
     }
   }
 
