@@ -39,7 +39,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
   }
 
   if (!apiKey) {
-    return json({ error: "APIキーが設定されていません。" }, 500);
+    return json({ error: "APIキーが設定されていません。", debug: { hasRuntime: !!runtime, envKeys: Object.keys(runtime?.env ?? {}) } }, 500);
   }
 
   // OpenRouter API呼び出し（プライマリ→フォールバック）
@@ -52,7 +52,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       result = await callOpenRouter(apiKey, FALLBACK_MODEL, input);
     } catch (e2) {
       console.error("Fallback model failed:", e2);
-      return json({ error: "AIサービスが一時的に利用できません。しばらくお待ちください。" }, 503);
+      return json({ error: "AIサービスが一時的に利用できません。しばらくお待ちください。", debug: String(e2) }, 503);
     }
   }
 
