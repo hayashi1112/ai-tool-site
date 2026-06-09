@@ -4,7 +4,7 @@ import type { EventContext } from "@cloudflare/workers-types";
 
 interface Env {
   OPENROUTER_API_KEY: string;
-  DB: D1Database;
+  DB?: D1Database; // D1はオプション（未設定でもキャッシュなしで動作する）
 }
 
 const SYSTEM_PROMPT = `あなたは日本語の敬語変換の専門家です。
@@ -30,17 +30,19 @@ export async function onRequestPost(
   const ip = request.headers.get("CF-Connecting-IP") ?? "unknown";
   const toolName = "keigo";
 
-  // --- レート制限チェック（1IP/1時間20回）---
+  // --- レート制限チェック（D1がある場合のみ）---
   const rateLimitKey = `ratelimit:${ip}:${toolName}`;
-  const rateRow = await env.DB.prepare(
-    "SELECT count FROM rate_limits WHERE key = ? AND reset_at > unixepoch()"
-  ).bind(rateLimitKey).first<{ count: number }>();
+  if (env.DB) {
+    const rateRow = await env.DB.prepare(
+      "SELECT count FROM rate_limits WHERE key = ? AND reset_at > unixepoch()"
+    ).bind(rateLimitKey).first<{ count: number }>();
 
-  if (rateRow && rateRow.count >= 20) {
-    return jsonResponse(
-      { error: "リクエスト上限（1時間20回）に達しました。しばらくお待ちください。" },
-      429
-    );
+    if (rateRow && rateRow.count >= 20) {
+      return jsonResponse(
+        { error: "リクエスト上限（1時間20回）に達しました。しばらくお待ちください。" },
+        429
+      );
+    }
   }
 
   // --- 入力チェック ---
@@ -56,14 +58,16 @@ export async function onRequestPost(
     return jsonResponse({ error: "テキストを入力してください。" }, 400);
   }
 
-  // --- D1キャッシュ確認（無料枠節約の要）---
+  // --- D1キャッシュ確認（D1がある場合のみ）---
   const cacheKey = `cache:${toolName}:${simpleHash(input)}`;
-  const cached = await env.DB.prepare(
-    "SELECT result FROM cache WHERE key = ? AND expires_at > unixepoch()"
-  ).bind(cacheKey).first<{ result: string }>();
+  if (env.DB) {
+    const cached = await env.DB.prepare(
+      "SELECT result FROM cache WHERE key = ? AND expires_at > unixepoch()"
+    ).bind(cacheKey).first<{ result: string }>();
 
-  if (cached) {
-    return jsonResponse({ result: cached.result, cached: true });
+    if (cached) {
+      return jsonResponse({ result: cached.result, cached: true });
+    }
   }
 
   // --- OpenRouter API呼び出し（プライマリ→フォールバック）---
@@ -83,17 +87,18 @@ export async function onRequestPost(
     }
   }
 
-  // --- D1にキャッシュ保存（7日間。無料枠が少ないので長めに）---
-  await env.DB.prepare(
-    "INSERT OR REPLACE INTO cache (key, result, expires_at) VALUES (?, ?, unixepoch() + 604800)"
-  ).bind(cacheKey, result).run();
+  // --- D1にキャッシュ・レート制限保存（D1がある場合のみ）---
+  if (env.DB) {
+    await env.DB.prepare(
+      "INSERT OR REPLACE INTO cache (key, result, expires_at) VALUES (?, ?, unixepoch() + 604800)"
+    ).bind(cacheKey, result).run();
 
-  // --- レート制限カウント更新 ---
-  await env.DB.prepare(`
-    INSERT INTO rate_limits (key, count, reset_at)
-    VALUES (?, 1, unixepoch() + 3600)
-    ON CONFLICT(key) DO UPDATE SET count = count + 1
-  `).bind(rateLimitKey).run();
+    await env.DB.prepare(`
+      INSERT INTO rate_limits (key, count, reset_at)
+      VALUES (?, 1, unixepoch() + 3600)
+      ON CONFLICT(key) DO UPDATE SET count = count + 1
+    `).bind(rateLimitKey).run();
+  }
 
   return jsonResponse({ result });
 }
