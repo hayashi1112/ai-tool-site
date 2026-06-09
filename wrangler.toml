@@ -4,10 +4,10 @@ compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = "dist"
 
 # Cloudflare D1 データベース（キャッシュ・レート制限用）
-[[d1_databases]]
-binding = "DB"
-database_name = "ai-tool-site-db"
-# 初回作成後に database_id を記入する:
+# D1は後で設定する（Step 4完了後に有効化）
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "ai-tool-site-db"
 # database_id = "xxxx-xxxx-xxxx-xxxx"
 
 # 環境変数（Cloudflare Dashboardでシークレットとして登録する）
