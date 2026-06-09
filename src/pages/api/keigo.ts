@@ -19,8 +19,11 @@ const PRIMARY_MODEL = "meta-llama/llama-3.3-70b-instruct:free";
 const FALLBACK_MODEL = "deepseek/deepseek-chat-v3.1:free";
 
 export const POST: APIRoute = async ({ request, locals }) => {
-  const env = (locals as { runtime?: { env?: Record<string, unknown> } }).runtime?.env ?? {};
-  const apiKey = (env.OPENROUTER_API_KEY as string) ?? "";
+  // @astrojs/cloudflareではlocals.runtime.envからCloudflare環境変数にアクセス
+  const runtime = (locals as { runtime?: { env?: Record<string, string> } }).runtime;
+  const apiKey = runtime?.env?.OPENROUTER_API_KEY
+    ?? (import.meta.env.OPENROUTER_API_KEY as string | undefined)
+    ?? "";
 
   // 入力チェック
   let body: { input?: string };
