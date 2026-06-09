@@ -1,0 +1,58 @@
+---
+// トップページ：AIツール一覧
+const tools = [
+  {
+    name: "敬語変換ツール",
+    description: "カジュアルな文章をビジネス敬語に変換。メールや文書作成をサポートします。",
+    href: "/keigo",
+    icon: "🎩",
+  },
+];
+---
+
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AIライティングツール集 | 無料で使える日本語AI補助ツール</title>
+    <meta name="description" content="無料で使える日本語AIライティング補助ツール集。敬語変換、文章校正など、ビジネス文書作成をサポートします。" />
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: 'Hiragino Sans', 'Noto Sans JP', sans-serif; background: #f8f9fa; color: #333; }
+      header { background: #fff; border-bottom: 1px solid #e0e0e0; padding: 16px 24px; }
+      header h1 { font-size: 1.4rem; font-weight: 700; color: #1a1a2e; }
+      header p { font-size: 0.85rem; color: #666; margin-top: 2px; }
+      main { max-width: 900px; margin: 40px auto; padding: 0 24px; }
+      h2 { font-size: 1.1rem; color: #555; margin-bottom: 20px; }
+      .tools { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
+      .tool-card { background: #fff; border: 1px solid #e0e0e0; border-radius: 12px; padding: 24px; text-decoration: none; color: inherit; transition: box-shadow 0.2s, transform 0.2s; display: block; }
+      .tool-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.1); transform: translateY(-2px); }
+      .tool-card .icon { font-size: 2rem; margin-bottom: 12px; }
+      .tool-card h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 8px; color: #1a1a2e; }
+      .tool-card p { font-size: 0.875rem; color: #666; line-height: 1.6; }
+      footer { text-align: center; padding: 40px 24px; color: #999; font-size: 0.8rem; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>✍️ AIライティングツール集</h1>
+      <p>無料で使える日本語AI補助ツール</p>
+    </header>
+    <main>
+      <h2>ツール一覧</h2>
+      <div class="tools">
+        {tools.map((tool) => (
+          <a href={tool.href} class="tool-card">
+            <div class="icon">{tool.icon}</div>
+            <h3>{tool.name}</h3>
+            <p>{tool.description}</p>
+          </a>
+        ))}
+      </div>
+    </main>
+    <footer>
+      <p>© 2024 AIライティングツール集 | Powered by OpenRouter</p>
+    </footer>
+  </body>
+</html>

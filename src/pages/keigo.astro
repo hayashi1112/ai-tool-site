@@ -1,0 +1,115 @@
+---
+// 敬語変換ツールページ
+---
+
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>敬語変換ツール | 無料AIで即座にビジネス敬語に変換</title>
+    <meta name="description" content="カジュアルな文章を無料AIがビジネス敬語に変換。メール・文書作成を効率化。" />
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: 'Hiragino Sans', 'Noto Sans JP', sans-serif; background: #f8f9fa; color: #333; }
+      header { background: #fff; border-bottom: 1px solid #e0e0e0; padding: 16px 24px; display: flex; align-items: center; gap: 12px; }
+      header a { text-decoration: none; color: #666; font-size: 0.9rem; }
+      header a:hover { color: #333; }
+      header h1 { font-size: 1.3rem; font-weight: 700; color: #1a1a2e; }
+      main { max-width: 760px; margin: 40px auto; padding: 0 24px; }
+      .description { background: #fff; border: 1px solid #e0e0e0; border-radius: 12px; padding: 20px 24px; margin-bottom: 28px; }
+      .description p { font-size: 0.9rem; color: #555; line-height: 1.7; }
+      .tool-area { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+      @media (max-width: 600px) { .tool-area { grid-template-columns: 1fr; } }
+      .panel label { display: block; font-size: 0.85rem; font-weight: 600; color: #444; margin-bottom: 8px; }
+      textarea { width: 100%; height: 160px; border: 1px solid #ddd; border-radius: 8px; padding: 12px; font-size: 0.9rem; font-family: inherit; resize: vertical; outline: none; transition: border-color 0.2s; }
+      textarea:focus { border-color: #4f6ef7; }
+      textarea[readonly] { background: #f9fafb; color: #333; }
+      .btn-wrap { margin-top: 20px; text-align: center; }
+      button { background: #4f6ef7; color: #fff; border: none; border-radius: 8px; padding: 12px 40px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+      button:hover { background: #3a57e8; }
+      button:disabled { background: #aaa; cursor: not-allowed; }
+      .status { text-align: center; margin-top: 12px; font-size: 0.875rem; color: #666; min-height: 20px; }
+      .status.error { color: #e53e3e; }
+      .copy-btn { display: none; margin-top: 8px; background: none; border: 1px solid #ddd; color: #555; padding: 6px 14px; font-size: 0.8rem; border-radius: 6px; cursor: pointer; }
+      .copy-btn:hover { background: #f0f0f0; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <a href="/">← ツール一覧</a>
+      <h1>🎩 敬語変換ツール</h1>
+    </header>
+    <main>
+      <div class="description">
+        <p>カジュアルな文章やメモを、ビジネスシーンで使える丁寧な敬語に変換します。社内メール・お客様への連絡・ビジネス文書の作成にご活用ください。</p>
+      </div>
+      <div class="tool-area">
+        <div class="panel">
+          <label for="input">変換したい文章</label>
+          <textarea id="input" placeholder="例：明日の会議、ちょっと遅れそうです。よろしく。"></textarea>
+        </div>
+        <div class="panel">
+          <label for="output">変換結果</label>
+          <textarea id="output" readonly placeholder="ここに変換結果が表示されます"></textarea>
+          <button class="copy-btn" id="copy-btn">📋 コピー</button>
+        </div>
+      </div>
+      <div class="btn-wrap">
+        <button id="convert-btn">敬語に変換する</button>
+      </div>
+      <p class="status" id="status"></p>
+    </main>
+
+    <script>
+      const inputEl = document.getElementById('input');
+      const outputEl = document.getElementById('output');
+      const convertBtn = document.getElementById('convert-btn');
+      const statusEl = document.getElementById('status');
+      const copyBtn = document.getElementById('copy-btn');
+
+      convertBtn.addEventListener('click', async () => {
+        const input = inputEl.value.trim();
+        if (!input) {
+          statusEl.textContent = '文章を入力してください。';
+          statusEl.className = 'status error';
+          return;
+        }
+
+        convertBtn.disabled = true;
+        statusEl.textContent = 'AI変換中…';
+        statusEl.className = 'status';
+        outputEl.value = '';
+        copyBtn.style.display = 'none';
+
+        try {
+          const res = await fetch('/api/keigo', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ input }),
+          });
+          const data = await res.json();
+          if (!res.ok) {
+            throw new Error(data.error || 'エラーが発生しました。');
+          }
+          outputEl.value = data.result;
+          statusEl.textContent = data.cached ? '✅ キャッシュから取得' : '✅ 変換完了';
+          statusEl.className = 'status';
+          copyBtn.style.display = 'inline-block';
+        } catch (err) {
+          statusEl.textContent = err.message || 'エラーが発生しました。';
+          statusEl.className = 'status error';
+        } finally {
+          convertBtn.disabled = false;
+        }
+      });
+
+      copyBtn.addEventListener('click', () => {
+        navigator.clipboard.writeText(outputEl.value).then(() => {
+          copyBtn.textContent = '✅ コピーしました';
+          setTimeout(() => { copyBtn.textContent = '📋 コピー'; }, 2000);
+        });
+      });
+    </script>
+  </body>
+</html>
