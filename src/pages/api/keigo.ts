@@ -52,7 +52,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       result = await callOpenRouter(apiKey, FALLBACK_MODEL, input);
     } catch (e2) {
       console.error("Fallback model failed:", e2);
-      return json({ error: "AIサービスが一時的に利用できません。しばらくお待ちください。", debug: String(e2) }, 503);
+      return json({ error: "AIサービスが一時的に利用できません。しばらくお待ちください。", debug: { e1: String(e1), e2: String(e2) } }, 503);
     }
   }
 
