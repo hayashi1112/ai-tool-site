@@ -1,0 +1,21 @@
+name = "ai-tool-site"
+compatibility_date = "2024-10-01"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = "dist"
+
+# Cloudflare D1 データベース（キャッシュ・レート制限用）
+[[d1_databases]]
+binding = "DB"
+database_name = "ai-tool-site-db"
+# 初回作成後に database_id を記入する:
+# database_id = "xxxx-xxxx-xxxx-xxxx"
+
+# 環境変数（Cloudflare Dashboardでシークレットとして登録する）
+# OPENROUTER_API_KEY は Dashboard > Settings > Environment Variables に登録
+# ここには書かないこと！
+
+[vars]
+SITE_NAME = "AIライティングツール集"
+
+# D1初期化SQL（初回のみ実行）
+# wrangler d1 execute ai-tool-site-db --file=./schema.sql
